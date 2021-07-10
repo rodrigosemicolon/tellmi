@@ -1,0 +1,2 @@
+rootProject.name = "TellMi"
+include ':app'
