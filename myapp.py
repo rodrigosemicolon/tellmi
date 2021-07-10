@@ -17,7 +17,7 @@ class Video(db.Model):
     age = db.Column(db.String(50))
 
 
-UPLOAD_DIRECTORY = "project/api_uploaded_files"
+UPLOAD_DIRECTORY = "audio_files/"
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
@@ -39,7 +39,7 @@ def define_video():
 def get_closest_video(sensor, lang, age):
     print("here")
     vid = Video.query.filter_by(sensorId=sensor, language=lang, age=age).first_or_404()
-    print(vid)
+    print(vid.videoDir)
     return send_from_directory(UPLOAD_DIRECTORY, vid.videoDir, as_attachment=True)
 
 
@@ -73,6 +73,20 @@ def post_file(filename):
 
     # Return 201 CREATED
     return "", 201
+
+@app.route("/delete/video/<string:filename>")
+def delete_video(filename):
+    vid = Video.query.filter_by(videoDir=filename).first()
+    db.session.delete(vid)
+    db.session.commit()
+    return "deleted " +filename
+
+@app.route("/delete_all")
+def delete_all():
+    Video.query.delete()
+    
+    db.session.commit()
+    return "deleted all"
 
 
 if __name__ == "__main__":

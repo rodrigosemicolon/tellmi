@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.BeaconParser.EDDYSTONE_URL_LAYOUT
+import org.altbeacon.beacon.service.ArmaRssiFilter
 import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor
 
 
@@ -23,14 +24,23 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
 
     val TAG = "BeaconTest"
     private var beaconManager: BeaconManager? = null
-    val ip = "192.168.99.94:5000"
+    val ip = "192.168.99.94:5000/"
+    lateinit var age_group: String
+    lateinit var lan: String
+    var last_url="None"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val age: String= intent.getStringExtra("age").toString()
-        val lan: String= intent.getStringExtra("lan").toString()
+        lan= intent.getStringExtra("lan").toString()
+        if(age.toInt() > 16){
+            age_group="adult"
+        }
+        else{
+            age_group="young"
+        }
         Log.d("extratest", "age:" + age + " lan: " + lan)
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         startActivityForResult(enableBtIntent, 0)
@@ -60,6 +70,8 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         this.beaconManager = BeaconManager.getInstanceForApplication(this)
         //this.beaconManager.setRssiFilterImplClass(ArmaRssiFilter.class)
         this.beaconManager!!.beaconParsers.add(BeaconParser().setBeaconLayout(EDDYSTONE_URL_LAYOUT))
+        //this.beaconManager.setRssiFilterImplClass(
+        //    ArmaRssiFilter.class)
         this.beaconManager!!.bind(this)
 
     }
@@ -215,17 +227,22 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
                 )
                 tvBeaconList.text="The first beacon I see has url: " + url + " and is about " + closest_beacon.distance +" meters away."
                 try {
-                    val url2 =
-                        "http://" + ip + "/video/" + url // your URL here
-                    val mediaPlayer = MediaPlayer()
-                    //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    mediaPlayer.setDataSource(this,Uri.parse(url2))
-                    mediaPlayer.prepare() // might take long! (for buffering, etc)
-                    //mediaPlayer.setOnPreparedListener(OnPreparedListener { //mp.start();
-                    //    mediaPlayer.start()
-                    //})
-                    mediaPlayer.start()
-                    mediaPlayer.release()
+                    val final_url =
+                        "http://" + ip +  url + lan + "/" + age_group // your URL here
+                    Log.d("getting_url", final_url)
+                    if(final_url!=last_url){
+
+                        last_url=final_url
+                        val mediaPlayer = MediaPlayer()
+                        //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+                        mediaPlayer.setDataSource(this,Uri.parse(final_url))
+                        mediaPlayer.prepareAsync() // might take long! (for buffering, etc)
+                        mediaPlayer.setOnPreparedListener(OnPreparedListener { //mp.start();
+                            mediaPlayer.start()
+                        })
+                    }
+                    //mediaPlayer.start()
+
 
                 } catch (e: Exception) {
                     e.printStackTrace()
