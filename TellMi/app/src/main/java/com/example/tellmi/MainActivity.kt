@@ -29,8 +29,9 @@ import kotlin.collections.ArrayList
 class MainActivity : AppCompatActivity(), BeaconConsumer {
 
     val TAG = "BeaconTest"
+    val minRange = 1f
     private var beaconManager: BeaconManager? = null
-    val ip = "192.168.1.91:5000/"
+    val ip = "rdrgprt:5000/" //my hostname, change this to the hostname or ip where the server is running from
     lateinit var age_group: String
     lateinit var lan: String
     var last_url="None"
@@ -138,7 +139,7 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         var tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList) as TextView
 
         this.beaconManager!!.addRangeNotifier { beacons, region ->
-            var min_dist: Float=1f
+            var min_dist: Float=minRange
             var closest_beacon: Beacon?=null
 
             for(beacon in beacons){
