@@ -9,8 +9,11 @@ In order to run the whole setup, the following steps must be taken:
 4) insert the ip of running server on MainActivity.kt (it's commented there)
 5) with everything running, one must only run the app and login with one of the following profiles:
 	username:englishadult@gmail.com	password:password123
+	
 	username:frenchadult@gmail.com	password:password123
+	
 	username:adultopt@gmail.com		password:password123
+	
 	username:criancapt@gmail.com		password:password123
 	
 
