@@ -88,6 +88,9 @@ def delete_all():
     db.session.commit()
     return "deleted all"
 
+@app.route('/all-videos')
+def videos():
+    return  jsonify([v.videoDir for v in Video.query.all()])
 
 if __name__ == "__main__":
     db.create_all()

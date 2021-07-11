@@ -2,37 +2,48 @@ package com.example.tellmi
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.RemoteException
+import android.text.format.Formatter
 import android.util.Log
 import android.widget.Button
+import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.BeaconParser.EDDYSTONE_URL_LAYOUT
-import org.altbeacon.beacon.service.ArmaRssiFilter
 import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), BeaconConsumer {
 
     val TAG = "BeaconTest"
     private var beaconManager: BeaconManager? = null
-    val ip = "192.168.99.94:5000/"
+    val ip = "192.168.1.91:5000/"
     lateinit var age_group: String
     lateinit var lan: String
     var last_url="None"
+    var alreadyPlayed: ArrayList<String> = ArrayList()
+    var scanning = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val ipAddress: String = Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
+        Log.d("iptest",ipAddress)
         val age: String= intent.getStringExtra("age").toString()
         lan= intent.getStringExtra("lan").toString()
         if(age.toInt() > 16){
@@ -47,6 +58,13 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         requestPermissions()
         val btAudio: Button = this.findViewById(R.id.btAudio)
 
+        val tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList) as TextView
+        btAudio.setOnClickListener {
+            if(last_url!="None")
+                play_audio(last_url)
+            else
+                Toast.makeText(this,"No explanation available yet!", Toast.LENGTH_SHORT).show()
+        }
 
         this.beaconManager = BeaconManager.getInstanceForApplication(this)
 
@@ -118,14 +136,16 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
 
         this.beaconManager!!.removeAllRangeNotifiers();
         var tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList) as TextView
+
         this.beaconManager!!.addRangeNotifier { beacons, region ->
             var min_dist: Float=1f
             var closest_beacon: Beacon?=null
 
             for(beacon in beacons){
-                if (beacon.serviceUuid == 0xfeaa && beacon.beaconTypeCode == 0x10) {
 
-                    if(beacon.distance<min_dist){
+                if (beacon.serviceUuid == 0xfeaa && beacon.beaconTypeCode == 0x10) {
+                    var url = UrlBeaconUrlCompressor.uncompress(beacon.id1.toByteArray());
+                    if(beacon.distance<min_dist && !(url in alreadyPlayed)){
 
                         min_dist= beacon.distance.toFloat()
                         closest_beacon=beacon
@@ -137,21 +157,17 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
                 Log.i(TAG,
                     "The first beacon I see has url: " + url + " and is about " + closest_beacon.distance +" meters away."
                 )
-                tvBeaconList.text="The first beacon I see has url: " + url + " and is about " + closest_beacon.distance +" meters away."
+
                 try {
                     val final_url =
                         "http://" + ip +  url + lan + "/" + age_group // your URL here
                     Log.d("getting_url", final_url)
-                    if(final_url!=last_url){
-
+                    if(!(url in alreadyPlayed)){
+                        alreadyPlayed.add(url)
                         last_url=final_url
-                        val mediaPlayer = MediaPlayer()
-                        //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-                        mediaPlayer.setDataSource(this,Uri.parse(final_url))
-                        mediaPlayer.prepareAsync() // might take long! (for buffering, etc)
-                        mediaPlayer.setOnPreparedListener(OnPreparedListener { //mp.start();
-                            mediaPlayer.start()
-                        })
+                        play_audio(final_url)
+                        tvBeaconList.text = final_url
+
                     }
                     //mediaPlayer.start()
 
@@ -171,7 +187,15 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         } catch (e: RemoteException ) {    }
     }
 
-
+fun play_audio(url: String){
+    val mediaPlayer = MediaPlayer()
+    //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+    mediaPlayer.setDataSource(this,Uri.parse(url))
+    mediaPlayer.prepareAsync() // might take long! (for buffering, etc)
+    mediaPlayer.setOnPreparedListener(OnPreparedListener { //mp.start();
+        mediaPlayer.start()
+    })
+}
 
 }
 
