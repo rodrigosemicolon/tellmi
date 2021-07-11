@@ -1,5 +1,5 @@
 # tellmi
-cmup project
+CMUP project by Pedro Oliveira, Rodrigo Ferreira
 
 In order to run the whole setup, the following steps must be taken:
 1) run myapp.py:  python3 myapp.py
