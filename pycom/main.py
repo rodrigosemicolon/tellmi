@@ -22,10 +22,7 @@ def twocompl(x):
 timeSleep = 1
 
 bluetooth = Bluetooth()
-#bluetooth.init(antenna=Bluetooth.EXT_ANT)
-#bluetooth.tx_power(Bluetooth.TX_PWR_ADV, )
 
-#power1m = -59
 tx_power=0xEE
 
 if mode == MODE_IBEACON:
@@ -42,8 +39,9 @@ if mode == MODE_IBEACON:
 
     bluetooth.set_advertisement(name = None, manufacturer_data = bytes(data))
 elif mode == MODE_EDDYSTONEURL:
-    url = '1/en/adult'
-    #url = 'https://www.google.com'
+    
+    url = '/video/1/' #change final number for each pycom
+    
 
     uuid = [0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xaa, 0xfe, 0x00, 0x00]
 

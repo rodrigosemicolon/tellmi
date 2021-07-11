@@ -46,29 +46,10 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         startActivityForResult(enableBtIntent, 0)
         requestPermissions()
         val btAudio: Button = this.findViewById(R.id.btAudio)
-        /*
-        btAudio.setOnClickListener{
-            try {
-                val url2 =
-                    "http://192.168.99.94:5000/video/1/en/adult" // your URL here
-                val mediaPlayer = MediaPlayer()
-                //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-                mediaPlayer.setDataSource(this,Uri.parse(url2))
-                mediaPlayer.prepare() // might take long! (for buffering, etc)
-                //mediaPlayer.setOnPreparedListener(OnPreparedListener { //mp.start();
-                //    mediaPlayer.start()
-                //})
-                mediaPlayer.start()
 
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
 
-         */
-        //val tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList)
         this.beaconManager = BeaconManager.getInstanceForApplication(this)
-        //this.beaconManager.setRssiFilterImplClass(ArmaRssiFilter.class)
+
         this.beaconManager!!.beaconParsers.add(BeaconParser().setBeaconLayout(EDDYSTONE_URL_LAYOUT))
         //this.beaconManager.setRssiFilterImplClass(
         //    ArmaRssiFilter.class)
@@ -131,74 +112,9 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-/*
-    override fun onBeaconServiceConnect() {
-        beaconManager!!.removeAllRangeNotifiers()
-        val tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList)
-        beaconManager!!.addRangeNotifier { beacons, region ->
-            for (beacon in beacons) {
-                Log.d("FOUND", "AT LEAST IT WAS FOUND")
-                if (beacon.serviceUuid == 0xfeaa && beacon.beaconTypeCode == 0x10) {
-                    // This is a Eddystone-URL frame
-                    var url = UrlBeaconUrlCompressor.uncompress(beacon.id1.toByteArray());
-                    Log.d(
-                        TAG, "I see a beacon transmitting a url: " + url +
-                                " approximately " + beacon.distance + " meters away."
-                    )
-                    val prev_str: String = tvBeaconList.text.toString()
-                    tvBeaconList.text =
-                        prev_str + "\n" + "I see a beacon transmitting a url: " + url +
-                                " approximately " + beacon.distance + " meters away."
-                }
-                try {
-                    beaconManager!!.startRangingBeaconsInRegion(
-                        Region(
-                            "myRangingUniqueId",
-                            null,
-                            null,
-                            null
-                        )
-                    )
-                } catch (e: RemoteException) {
-                }
-            }
-        }
-    }
-
-*/
 
     override fun onBeaconServiceConnect() {
-        /*
-        this.beaconManager!!.removeAllMonitorNotifiers()
-        this.beaconManager!!.addMonitorNotifier(object : MonitorNotifier {
-            override fun didEnterRegion(region: Region?) {
-                Log.i(TAG, "I just saw a beacon for the first time!")
 
-
-            }
-
-            override fun didExitRegion(region: Region?) {
-                Log.i(TAG, "I no longer see a beacon")
-            }
-
-            override fun didDetermineStateForRegion(state: Int, region: Region?) {
-                Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state")
-            }
-        })
-
-        try {
-            this.beaconManager!!.startMonitoringBeaconsInRegion(
-                Region(
-                    "myMonitoringUniqueId",
-                    null,
-                    null,
-                    null
-                )
-            )
-        } catch (e: RemoteException) {
-        }
-
-         */
 
         this.beaconManager!!.removeAllRangeNotifiers();
         var tvBeaconList: TextView = this.findViewById(R.id.tvBeaconList) as TextView
@@ -208,11 +124,7 @@ class MainActivity : AppCompatActivity(), BeaconConsumer {
 
             for(beacon in beacons){
                 if (beacon.serviceUuid == 0xfeaa && beacon.beaconTypeCode == 0x10) {
-                    //var url = UrlBeaconUrlCompressor.uncompress(beacon.id1.toByteArray());
-                    //Log.i(TAG,
-                    //    "The first beacon I see has url: " + url + " and is about " + beacon.distance +" meters away."
-                    //)
-                    //tvBeaconList.text="The first beacon I see has url: " + url + " and is about " + beacon.distance +" meters away."
+
                     if(beacon.distance<min_dist){
 
                         min_dist= beacon.distance.toFloat()
